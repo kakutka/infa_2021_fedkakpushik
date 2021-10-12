@@ -67,61 +67,40 @@ coopl2 = gener_ballxy()
 coopl3 = gener_ballxy()
 coopl4 = gener_ballxy()
 coopl5 = gener_ballxy()
-while not finished:
-    clock.tick(FPS)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            finished = True
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            pass
+
+clock.tick(FPS)
+sms = text.render("количество очков: " + str(k), True, (255, 255, 0))
+screen.blit(sms, (0, 0))
+pygame.display.update()
+screen.fill(BLACK)
+c = 0
+g = 6
+gh = [gener_ballxy() for i in range(g)]
+
+
+
+while True:
     sms = text.render("количество очков: " + str(k), True, (255, 255, 0))
+    clock.tick(40)
+    for i in range(g):
+        gh[i] = ball(gh[i])
     screen.blit(sms, (0, 0))
     pygame.display.update()
     screen.fill(BLACK)
-    c = 0
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:
+                for i in range(g):
+                    if prov(gh[i]):
+                        gh[i] = (-100, -100, 1, 0, 0, (0, 0, 0))
+                        k+= 1
+                        c= 1
+                        break
 
-    while True:
-        clock.tick(40)
-        coopl1 = ball(coopl1)
-        coopl2 = ball(coopl2)
-        coopl3 = ball(coopl3)
-        coopl4 = ball(coopl4)
-        coopl5 = ball(coopl5)
-        screen.blit(sms, (0, 0))
-        pygame.display.update()
-        screen.fill(BLACK)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    if prov(coopl1):
-                        coopl1 = (-100, -100, 1, 0, 0, (0, 0, 0))
-                        k += 1
-                        c = 1
-                        break
-                    if prov(coopl2):
-                        coopl2 = (-100, -100, 1, 0, 0, (0, 0, 0))
-                        k += 1
-                        c = 1
-                        break
-                    if prov(coopl3):
-                        coopl3 = (-100, -100, 1, 0, 0, (0, 0, 0))
-                        k += 1
-                        c = 1
-                        break
-                    if prov(coopl4):
-                        coopl4 = (-100, -100, 1, 0, 0, (0, 0, 0))
-                        k += 1
-                        c = 1
-                        break
-                    if prov(coopl5):
-                        coopl5 = (-100, -100, 1, 0, 0, (0, 0, 0))
-                        k += 1
-                        c = 1
-                        break
-        if c == 1:
-            break
+    if k == g:
+        break
                         
         
         
