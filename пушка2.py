@@ -1,32 +1,65 @@
+#код для пушки2. пушка едет по земле, мишени(круг или квадрат) двигаются по всей плоскости и выпускают пули тоже
+
 import math
 from random import choice
-from random import randint as rnd
+from random import randint
 import pygame
+pygame.init()
+pygame.font.init()
 
+f1 = pygame.font.Font(None, 24)
+
+FPS = 30
 
 RED = 0xFF0000
 BLUE = 0x0000FF
-YELLOW = 0xFFC91F
+#YELLOW = 0xFFC91F
 GREEN = 0x00FF00
 MAGENTA = 0xFF03B8
 CYAN = 0x00FFCC
 BLACK = (0, 0, 0)
 WHITE = 0xFFFFFF
 GREY = 0x7D7D7D
-GAME_COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
+GAME_COLORS = [RED, BLUE, GREEN, MAGENTA, CYAN]
+GOLD = (255, 215, 0)
 
-class Ball():
-    def __init__(self, screen: pygame.Surface):
-        self.x = 0
-        self.y = 0
+WIDTH = 800
+HEIGHT = 600
+
+
+class Ball:
+    def __init__(self, screen: pygame.Surface, x=40, y=450):
+        """ Конструктор класса ball
+
+        Args:
+        x - начальное положение мяча по горизонтали
+        y - начальное положение мяча по вертикали
+        """
+        self.screen = screen
+        self.x = x
+        self.y = y
         self.r = 10
         self.vx = 0
         self.vy = 0
-        self.screen = screen
+        self.color = choice(GAME_COLORS)
         self.live = 1
-        self.color = (200, 200, 100)
-        
-    
+
+    ''''def move(self):
+        """Переместить мяч по прошествии единицы времени.
+
+        Метод описывает перемещение мяча за один кадр перерисовки. То есть, обновляет значения
+        self.x и self.y с учетом скоростей self.vx и self.vy, силы гравитации, действующей на мяч,
+        и стен по краям окна (размер окна 800х600).
+        """
+        self.x += self.vx
+        self.y -= self.vy
+        self.vy -= 5
+        if self.x >= (800 - self.r) or self.x <= self.r :
+            self.vx *= -1
+            self.x += 2*self.vx
+        if self.y >= (600 - self.r) or self.y <= self.r :
+            self.vy *= -0.8
+            '''
     def move(self):
         self.y += self.vy
         self.x += self.vx
@@ -42,57 +75,85 @@ class Ball():
             self.r = 30
             self.live = 0
     
-    def testball(self, other):
-        if (self.x-other.x)**2+(self.y-other.y)**2 <= (self.r + other.r)**2:
+
+    def draw(self):
+        pygame.draw.circle(
+            self.screen,
+            self.color,
+            (int(self.x), int(self.y)),
+            self.r)
+
+    def hittest(self, obj):
+        """Функция проверяет сталкивалкивается ли данный обьект с целью, описываемой в обьекте obj.
+
+        Args:
+            obj: Обьект, с которым проверяется столкновение.
+        Returns:
+            Возвращает True в случае столкновения мяча и цели. В противном случае возвращает False.
+        """
+        # FIXME
+        x2, y2 = obj.x, obj.y
+        if (self.x-x2)**2+(self.y-y2)**2<=(self.r+obj.r)**2:
             self.color = (255, 0, 0)
             self.r = 30
             self.live = 0
             return True
         return False
-            
-    def draw(self):
-        pygame.draw.circle(self.screen, self.color, (self.x, self.y), self.r)
-        
+
 class Bugy_Vugy():
     def __init__(self, screen):
-        self.x = rnd(100, 700)
-        self.y = rnd(100, 300)
-        self.vx = rnd(-5, 5)
+        self.x = randint(100, 700)
+        self.y = randint(100, 300)
+        self.vx = randint(-5, 5)
+        self.vy = randint(-5,5)
         self.live = 1
-        self.r = rnd(30, 50)
-        self.color = GAME_COLORS[rnd(0, 5)]
+        self.r = randint(30, 50)
+        self.color = choice(GAME_COLORS)
         self.gun = 1000
         self.screen = screen
         
     def move(self):
+        '''описывает движение стреляющей мишени'''
         global gunball
         self.x += self.vx
+        self.y += self.vy
         self.gun -= 5
         if self.x + self.vx >= 750:
             self.vx *= -1
         if self.x + self.vx <= 50:
             self.vx *= -1
+        if self.y + self.vy >= 550:
+            self.vy *= -1
+        if self.y + self.vy <= 50:
+            self.vy *= -1
         if self.live == 0:
             self.x = self.y = -100
-            self.vx = 0
+            self.vx = self.vy = 0
         if self.gun % 100 == 0:
             gg = Ball(self.screen)
             gg.x = self.x
             gg.y = self.y
             gg.color = (0, 200, 0)
-            gg.vx = rnd(-4, 4)
-            gg.vy = rnd(5, 10)
+            gg.vx = randint(-4, 4)
+            gg.vy = randint(5, 10)
             gunball.append(gg)
             
-    def test(self, other):
-        if (self.x-other.x)**2+(self.y-other.y)**2 <= (self.r + other.r)**2:
+    def test(self, obj):
+        if (self.x-obj.x)**2+(self.y-obj.y)**2 <= (self.r + obj.r)**2:
             self.live = 0
             return True
         return False
         
     def draw(self):
-        pygame.draw.circle(self.screen, self.color, (self.x, self.y), self.r)
-        
+        if randint(0,1):
+            pygame.draw.circle(self.screen, self.color, (self.x, self.y), self.r)
+        else:
+            x = self.x
+            y = self.y
+            r = self.r
+            a = [(x-r, y-r), (x+r, y-r), (x+r, y+r), (x-r, y+r)]
+            pygame.draw.polygon(self.screen, self.color, a)
+
 
 class Tank():
     def __init__(self, screen):
@@ -105,9 +166,14 @@ class Tank():
         self.screen = screen
         
     def move(self):
+        ''' описывает движение танка(по земле)'''
         self.x += self.vx
         if self.x + self.vx >= 750 or self.x+self.vx<=50:
             self.vx *= -1
+        if self.live == 0:
+            self.x = self.y = -100
+            return True
+        return False
     
     def draw(self):
         x = self.x
@@ -116,14 +182,20 @@ class Tank():
         pygame.draw.circle(self.screen, self.color, (self.x, self.y), self.r)
         pygame.draw.polygon(self.screen, self.color, g)
     
-    def test(self, other):
-        if (self.x-other.x)**2+(self.y-other.y)**2 <= (self.r + other.r)**2:
+    def test(self, obj):
+        if (self.x-obj.x)**2+(self.y-obj.y)**2 <= (self.r*3 + obj.r)**2:
             self.live = 0
             return True
         return False
     
     def gungun(self, event):
-        global balls
+        """Выстрел мячом. прицеливание
+
+        Происходит при отпускании кнопки мыши.
+        Начальные значения компонент скорости мяча vx и vy зависят от положения мыши.
+        """
+        global balls, bullet
+        bullet +=1
         gun = Ball(self.screen)
         gun.r += 5
         self.an = math.atan2((event.pos[1]-self.y), (event.pos[0]-self.x))
@@ -132,65 +204,71 @@ class Tank():
         gun.x = self.x
         gun.y = self.y
         balls.append(gun)
+    
 
-        
-        
-        
-        
-        
-            
+
+
 pygame.init()
-pygame.font.init()
-screen = pygame.display.set_mode((800, 600))
-gunball = []
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+bullet = 0
 balls = []
-FPS = 30
+gunball = []
+
 clock = pygame.time.Clock()
-bugy = Bugy_Vugy(screen)
+mis = Bugy_Vugy(screen)
 tank = Tank(screen)
 finished = False
+count = 0
+
 
 while not finished:
-    screen.fill((255, 255, 255))
-    bugy.draw()
+    screen.fill(WHITE)
+    mis.draw()
     tank.draw()
     for b in gunball:
-        b.draw()       
-    for bb in balls:
-        bb.draw()
+        if b.live >=1:
+            b.draw()
+    if tank.live>0:
+        for bb in balls:
+            if bb.live >=1:
+                bb.draw()
+
+    text2 = f1.render('Количество очков: '+str(count), True, (180,0,0))
+    screen.blit(text2, (500, 50))
+        
     pygame.display.update()
+
     
+        
     clock.tick(FPS)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             finished = True
-        if event.type == pygame.MOUSEBUTTONUP:
+        elif event.type == pygame.MOUSEBUTTONDOWN:
             tank.gungun(event)
-        #   gun.fire2_start(event)
-        #elif event.type == pygame.MOUSEBUTTONUP:
-        #    gun.fire2_end(event)
-        #elif event.type == pygame.MOUSEMOTION:
-        #    gun.targetting(event)
+           
 
     for b in gunball:
         b.move()
-        for bb in balls:
-            b.testball(bb)
-            bb.testball(b)
-            if bugy.test(bb):
-                bugy = Bugy_Vugy(screen)
-        tank.test(b)
-        
+        if tank.live>0:
+            for bb in balls:
+                b.hittest(bb)
+                bb.hittest(b)
+                if mis.test(bb):
+                    mis = Bugy_Vugy(screen)
+                    count +=1
+                tank.test(b)
+
     for b in balls:
         b.move()
-    bugy.move()
+    mis.move()
     if tank.move():
-        f2 = pygame.font.Font(None, 50)
-        text2 = f2.render("Вы проиграли", True, (0, 255, 0), (0, 0, 0))
-        screen.blit(text2, (350, 280))               
+        text3 = f1.render('GAME OVER. YOU ARE LOSER. Ha-Ha-Ha', True, (180,0,0))
+        screen.blit(text3, (200, 200))
         pygame.display.update()
         clock.tick(FPS)
-        break
+        #break
+        #если раскомментить брейк, то будет просто вылет из игры
     
 
 pygame.quit()
